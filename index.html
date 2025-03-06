@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Natural Sort Words</title>
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <style>
+      body {
+        margin: 0;
+        padding: 8px;
+        font-family: sans-serif;
+        height: 100vh;
+        box-sizing: border-box;
+      }
+      #container {
+        display: flex;
+        gap: 8px;
+        height: calc(100% - 65px);
+      }
+      #footer {
+        height: 20px;
+        text-align: right;
+      }
+      .pane {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+      }
+      textarea {
+        width: 100%;
+        height: 100%;
+        padding: 8px;
+        box-sizing: border-box;
+        font-family: monospace;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        resize: none;
+      }
+      #output-format {
+        margin: 0 0 8px 8px;
+        padding: 4px;
+      }
+      label {
+        font-size: 0.9em;
+        color: #666;
+        margin-bottom: 4px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      #copy-button {
+        padding: 4px 8px;
+        background: #4caf50;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.8em;
+      }
+      #copy-button:hover {
+        background: #45a049;
+      }
+      .toast {
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0, 0, 0, 0.9);
+        color: white;
+        padding: 8px 16px;
+        border-radius: 4px;
+        font-size: 0.9em;
+        visibility: hidden;
+        opacity: 0;
+        transition: opacity 0.3s, visibility 0.3s;
+      }
+      .toast.visible {
+        visibility: visible;
+        opacity: 1;
+      }
+      #header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 auto;
+        margin: 0;
+      }
+      #header h1 {
+        font-size: 1.5em;
+        margin: 0;
+        padding: 8px 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="header">
+      <h1>Natural Sort Words</h1>
+      <div>
+        Choose output format:
+        <select id="output-format">
+          <option value="multiline">Multi-line</option>
+          <option value="singleline">Single-line</option>
+        </select>
+      </div>
+    </div>
+    <div id="container">
+      <div class="pane">
+        <label>Input (separated by spaces/commas/newlines):</label>
+        <textarea id="input" placeholder="Enter items..."></textarea>
+      </div>
+      <div class="pane">
+        <label>
+          Sorted Output:
+          <button id="copy-button">📋 Copy</button>
+        </label>
+        <textarea id="output" readonly></textarea>
+      </div>
+    </div>
+    <footer>
+      <div id="footer">
+        <small>
+          ❤️
+          <a href="https://github.com/andygock/natural-sort-words">GitHub</a>
+        </small>
+      </div>
+    </footer>
+    <div id="toast" class="toast"></div>
+
+    <script>
+      let currentSortedItems = [];
+
+      function naturalCompare(a, b) {
+        const ax = [],
+          bx = [];
+        a.replace(/(\d+)|(\D+)/g, (_, $1, $2) =>
+          ax.push([$1 || Infinity, $2 || ""])
+        );
+        b.replace(/(\d+)|(\D+)/g, (_, $1, $2) =>
+          bx.push([$1 || Infinity, $2 || ""])
+        );
+
+        for (let i = 0; i < Math.max(ax.length, bx.length); i++) {
+          const aPart = ax[i] || ["", ""];
+          const bPart = bx[i] || ["", ""];
+          if (aPart[0] !== bPart[0]) {
+            return aPart[0] - bPart[0];
+          }
+          if (aPart[1] !== bPart[1]) {
+            return aPart[1].localeCompare(bPart[1]);
+          }
+        }
+        return 0;
+      }
+
+      function updateOutput() {
+        const input = document.getElementById("input").value;
+        const format = document.getElementById("output-format").value;
+
+        const items = input.split(/[\n, ]+/).filter((item) => item.trim());
+        const sorted = [...items].sort(naturalCompare);
+        currentSortedItems = sorted;
+
+        const output =
+          format === "multiline" ? sorted.join("\n") : sorted.join(" ");
+
+        document.getElementById("output").value = output;
+      }
+
+      async function copyToClipboard() {
+        try {
+          const output = document.getElementById("output").value;
+          await navigator.clipboard.writeText(output);
+          const itemCount = currentSortedItems.length;
+          showToast(`Copied ${itemCount} items to clipboard`);
+        } catch (err) {
+          showToast("Failed to copy to clipboard");
+        }
+      }
+
+      function showToast(message) {
+        const toast = document.getElementById("toast");
+        toast.textContent = message;
+        toast.classList.add("visible");
+        setTimeout(() => {
+          toast.classList.remove("visible");
+        }, 1000);
+      }
+
+      // Event listeners
+      document.getElementById("input").addEventListener("input", updateOutput);
+      document
+        .getElementById("output-format")
+        .addEventListener("change", updateOutput);
+      document
+        .getElementById("copy-button")
+        .addEventListener("click", copyToClipboard);
+
+      // Initial update
+      updateOutput();
+    </script>
+  </body>
+</html>
