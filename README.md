@@ -2,6 +2,12 @@
 
 Natural Sort Words is a web application that allows users to input a list of words or phrases and sort them naturally. The sorted output can be copied to the clipboard for easy use.
 
+[Live working site](https://andygock.github.io/natural-sort-words/)
+
+## Privacy
+
+All actions are performed entirely within your browser. No data is sent to any server, ensuring your input remains private.
+
 ## Features
 
 - **Natural Sorting**: Sorts words and phrases in a human-friendly order.
